@@ -1,0 +1,76 @@
+//De 11
+#include <iostream>
+#include <string.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
+using namespace cv;
+
+int main()
+{
+    Mat I = imread("D:\\OpenCV\\OpenCV346\\OpenCV346\\lena.png", 1);
+	if (I.data == NULL) {
+		cout << "Open file is fail";
+		return 0;
+	}
+    imshow("Anh mau", I);
+    //2
+	Mat Ig(I.rows, I.cols, CV_8UC1, Scalar(0));
+	for (int i = 0;i < I.rows;i++) {
+		for (int j = 0;j < I.cols;j++) {
+			Ig.at<uchar>(i, j) = I.at<Vec3b>(i, j)[0] * 0.11 + I.at<Vec3b>(i, j)[1] * 0.5 + I.at<Vec3b>(i, j)[2] * 0.39;
+		}
+	}
+	imshow("Anh xam", Ig);
+	//ý 2
+	double min, max;
+	minMaxLoc(Ig, &min, &max);
+	cout << "Trung binh= " << (min + max) / 2 << endl;
+	//3
+	Mat dstY,Ie;
+	Sobel(Ig, dstY, CV_64F, 0, 1, 3);
+	imshow("sobel huong y", dstY);
+	//4
+	Canny(Ig, Ie, 100, 255, 3);
+	imshow("canny", Ie);
+	int pointValue = (int)Ig.at<uchar>(100,120);
+	if (pointValue == 0) {
+		cout << "La Nen"<<endl;
+	}
+	else {
+		cout << "La Bien"<<endl;
+	}
+	//5
+	int a = 100;
+	int b = 120;
+	for (int i = -2; i <= 2; i++) {
+		for (int j = -2; j <= 2; j++) {
+			cout << (int)Ig.at<uchar>(a + i, b + j) << ",";
+		}
+		cout << endl;
+	}
+	
+	
+	//6
+
+	Mat Ib;
+	threshold(Ig, Ib, 100, 255, THRESH_OTSU);
+	//imshow("otsu ", Ib);
+
+	vector<vector<Point>> countours;
+	vector<Vec4i> hie;
+	//tim bien
+	findContours(Ib, countours, hie, RETR_TREE, CHAIN_APPROX_SIMPLE);
+	//Ve tat ca bien tren anh goc
+	for (int i = 0; i < countours.size(); i++) {
+		drawContours(I, countours, i, Scalar(0, 0, 255),2,8, hie);
+	}
+	imshow("coutours", I);
+
+	
+
+
+    waitKey();
+}

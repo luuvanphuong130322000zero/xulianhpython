@@ -1,0 +1,189 @@
+#include <iostream>
+#include<opencv2/core.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+using namespace std;
+
+void drawHistogram(Mat img, Mat kenh, string name)
+{
+	float hr[256] = { 0 };
+	for (int i = 0; i < img.rows; i++)
+	{
+		for (int j = 0; j < img.cols; j++)
+		{
+			hr[kenh.at<uchar>(i, j)]++;
+		}
+	}
+	//chuan hoa
+	for (int i = 0; i < 256; i++)
+	{
+		hr[i] = hr[i] / (img.rows * img.cols);
+	}
+
+
+	int w = 400;
+	int h = 300;
+	Mat hisr(h, w, CV_8UC3, Scalar(255, 255, 255)); // tao anh trang - moi
+	//draw
+	for (int i = 0; i < 256; i++)
+	{
+		line(hisr, Point(i, h), Point(i, h - hr[i] * 15000), Scalar(0, 0, 255), 2, 8, 0);
+	}
+	// show
+	imshow(name, hisr);
+}
+int main()
+{
+	// Hiển thị ảnh gốc 
+	Mat I = imread("C:\\Users\\Admin\\Downloads\\OpenCV346\\lena.png", 1);
+	imshow("Anh mau I", I);
+
+	//Thay đổi kích thước ảnh
+	Mat N;
+	resize(I, N, Size(300,300));
+	//imshow("Anh sau khi thay doi", N);
+
+	//Đoc anh va hien thi kenh G
+	Mat kenh[3];
+	split(I, kenh);
+	//imshow("Anh kenh G", kenh[1]);
+
+	//Chuyển đổi mô hình màu sang HSV
+	Mat hsv;
+	cvtColor(I, hsv, COLOR_RGB2HSV);
+	//imshow("Anh kenh HSV", hsv);
+	    //hien thi anh trên kenh V
+	Mat kenh_hsv[3];
+	split(hsv, kenh_hsv);
+	//imshow("Anh tren kenh V", kenh_hsv[2]);
+
+	//Chuyển đổi ảnh gốc -> anh xám
+	Mat xam(I.rows, I.cols, CV_8UC1, Scalar(0));
+	for (int i = 0; i < I.rows; i++)
+	{
+		for (int j = 0; j < I.cols; j++)
+		{
+			xam.at<uchar>(i, j) = I.at<Vec3b>(i, j)[2] * 0.39 + I.at<Vec3b>(i, j)[1] * 0.5 + I.at<Vec3b>(i, j)[0] * 0.11;
+		}
+	}
+	//imshow("Anh xám", xam);
+
+	//Tìm mức xám lớn nhất trên kênh V
+	double min, max;
+	minMaxLoc(kenh_hsv[2], &min, &max);
+	cout << "MAX :" << max << endl;
+	cout << "TB :" << (min+max)/2 << endl;
+
+	//Hiển thị chiều cao x rộng
+	cout << "rong:" << (int)I.rows << endl;
+	cout << "Dai:" << (int)I.cols << endl;
+
+	//phân ngưỡng nhị phân trên ảnh gốc sử dụng ngưỡng BINARY - OTSU // 1 kênh
+	Mat dst;
+	threshold(I, dst, 100, 255, THRESH_BINARY);
+	imshow("Phan nguong binary", dst);
+
+	//medianBlur(I, dst, 3);
+	/*threshold(xam, dst, 100, 255, THRESH_OTSU);
+	imshow("Phan nguong otsu", dst);*/
+
+	//Lọc nhiễu-làm mờ- làm trơn
+	//blur(I, dst, Size(3,3), Point(-1, -1), 4);
+	//imshow("blur", dst);
+
+	//medianBlur(I, dst, 3);
+	//imshow("Median3", dst);
+
+	//GaussianBlur(I, dst, Size(3, 3), 0);
+	//imshow("Gaussian", dst);
+
+	//Hiển thị giá trị R-G-B của điểm ảnh tại vị trí (x,y)
+	cout << "Red :" << (int)I.at<Vec3b>(100, 150)[2] << endl;
+	cout << "Green :" << (int)I.at<Vec3b>(100, 150)[1] << endl;
+	cout << "Blue :" << (int)I.at<Vec3b>(100, 150)[0] << endl;
+	   //chuyển ảnh gốc qua anh xam theo ham
+	cvtColor(I, xam, COLOR_RGB2GRAY);
+	//imshow("Anh xam", xam);
+	cout << "Muc xam : " << (int)xam.at<uchar>(100, 150) << endl;
+
+	//Hien thi gia tri muc xam tren anh 1 kenh cua 1 diem anh tai vi tri I(x,y) == I(100,100)
+	cout << "Gia tri muc xam kenh[0] tai I(100,100) : " << (int)kenh[0].at<uchar>(100, 100) << endl;
+
+	//Hien thi gia tri muc xam tai diem lan can 3 x3
+	//nếu ma trận 5x5 thì for từ -2 đến 2
+	int a = 181;
+	int b = 120;
+	for (int i = -1; i <= 1; i++) {
+		for (int j = -1; j <= 1; j++) {
+			cout << (int)xam.at<uchar>(a + i, b + j) << ",";
+		}
+		cout <<endl;
+	}
+
+	//Biến đổi âm bản kênh 2
+	dst = 255 - kenh[2];
+	//imshow("Am ban", dst);
+
+	//Cân bằng mức xám và hiển thị tren kênh red
+	//kenh[0] = kenh[1] = 0;
+	//merge(kenh, 3, dst);
+	//imshow("Anh can bang Red", dst);
+
+	//tăng độ sáng 
+	   // 1 kênh
+	//Mat dosang = kenh[0] + 60;
+	//imshow("dosang:", dosang);
+	
+	   //full kênh
+    //merge(kenh, 3, dst);
+	Mat dosang = dst + 60;
+	//imshow("dosang:", dosang);
+
+
+	//Tính và vẽ histogram trên từng kênh
+	drawHistogram(I, kenh[0], "kenh blue");
+	drawHistogram(I, kenh[1], "kenh green");
+	drawHistogram(I, kenh[2], "kenh red");
+
+
+	// 3
+	//Mat gradient;
+	//theo huong x
+	//Mat dstx, dsty;
+	//Sobel(I, dstx, CV_64F, 1, 0, 3);
+	//imshow("bien sobel theo x :" , dstx);
+
+	//Sobel(I, dsty, CV_64F,0,1, 3);
+	//imshow("bien sobel theo y :" , dsty);
+
+	//4
+	//Mat Ie;
+	//Canny(out, Ie, 10, 200, 3, false);
+	//imshow("canny", Ie);
+
+	//if (Ie.at<uchar>(120,181) == 255)
+	//	cout << "no la diem bien"<<endl;
+	//else
+	//	cout << "no k phai diem bien"<<endl;
+
+
+	////6
+	Mat Ib;
+	threshold(xam, Ib, 100, 255, THRESH_OTSU);
+	//imshow("Phan nguong otsu", Ib);
+	vector<vector<Point>> countours;
+	vector<Vec4i> hie;
+	//tim bien
+	findContours(Ib, countours, hie, RETR_TREE, CHAIN_APPROX_SIMPLE);
+	//Ve tat ca bien tren anh goc
+	for (int i = 0; i < countours.size(); i++) {
+		drawContours(I, countours, i, Scalar(0, 0, 255),2,8, hie);
+	}
+	imshow("coutours", I);
+
+
+	waitKey();
+}
+

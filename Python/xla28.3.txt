@@ -1,0 +1,67 @@
+#include <iostream>
+#include <string.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
+using namespace cv;
+
+//Co ban
+//2.resize anh
+void Question1(Mat src,Mat dst,string name) {
+    resize(src, dst, Size(512, 512));
+    imshow(name, dst);
+}
+
+//3.Hien thi kenh R/G/B
+void Question2(Mat kenh, string name) {
+    imshow(name, kenh);
+}
+
+//4.Hien thi kenh HSV
+void Question3(Mat src, Mat kenhHSV[3]) {
+    Mat hsv;
+    cvtColor(src, hsv, CV_RGB2HSV);
+    split(hsv, kenhHSV);
+    imshow("H", kenhHSV[0]);
+    imshow("S", kenhHSV[1]);
+    imshow("V", kenhHSV[2]);
+}
+//5.Chuyen anh xam theo cong thuc
+void Question4(Mat src, float x, float y, float z) {
+    Mat gray(src.rows, src.cols, CV_8UC1, Scalar(0));
+    for (int i = 0; i < src.rows; i++) {
+        for (int j = 0; j < src.cols; j++) {
+            gray.at<uchar>(i, j) = src.at<Vec3b>(i, j)[0] * x + src.at<Vec3b>(i, j)[1] * y + src.at<Vec3b>(i, j)[2] * z;
+        }
+    }
+    imshow("gray", gray);
+}
+//6.Tim muc xam nho nhat, lon nhat
+void Question5(Mat kenh) {
+    double min, max;
+    minMaxLoc(kenh, &min, &max);
+    cout << "min : " << "max : " << max;
+}
+
+//7. Hien thi kich co cua anh
+void Question6(Mat src) {
+    cout << "W : " << src.cols << "H : " << src.rows;
+}
+int main()
+{
+    Mat src, dst, kenh[3], kenhHSV[3];
+    src = imread("E:\\OpenCV346\\OpenCV346\\lena.png", 1);
+    split(src, kenh);
+    //Question1(src, dst, "resize");
+    //Question2(kenh[0], "B");
+    //Question2(kenh[1], "G");
+    //Question2(kenh[2], "R");
+    //Question3(src, kenhHSV);
+    //Question4(src, 0.2, 0.5, 0.3);
+    //Question5(kenh[0]);
+    Question6(src);
+
+    waitKey();
+}

@@ -1,0 +1,261 @@
+﻿
+#include<opencv2/core/core.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+#include<iostream>
+//#include<string.h>
+
+using namespace std;
+using namespace cv;
+
+void drawHistogram(Mat img, Mat kenh, string name)
+{
+    float hr[256] = { 0 };
+    for (int i = 0; i < img.rows; i++)
+    {
+        for (int j = 0; j < img.cols; j++)
+        {
+            hr[kenh.at<uchar>(i, j)]++;
+        }
+    }
+    //chuan hoa
+    for (int i = 0; i < 256; i++)
+    {
+        hr[i] = hr[i] / (img.rows * img.cols);
+    }
+    //
+
+    int w = 400;
+    int h = 300;
+    Mat hisr(h, w, CV_8UC3, Scalar(255, 255, 255)); // tao anh trang - moi
+    //draw
+    for (int i = 0; i < 256; i++)
+    {
+        line(hisr, Point(i, h), Point(i, h - hr[i] * 15000), Scalar(0, 0, 255), 2, 8, 0);
+    }
+    // show
+    imshow(name, hisr);
+}
+int main()
+{
+    //Doc và hiển thị ảnh
+    Mat img;
+    img = imread("D:\\OpenCV\\OpenCV346\\OpenCV346\\lena.png",1); //CV_LOAD_IMAGE_COLOR
+    if (img.data == NULL) {
+        cout << "Open file is fail";
+        return 0;
+    }
+    imshow("anh mau", img);
+
+   // ảnh 3 kênh sang 1 kênh (ảnh xám) theo hàm , chuyển ảnh xám
+    Mat imgGray;
+    imgGray = imread("D:\\OpenCV\\OpenCV346\\OpenCV346\\lena.png", CV_LOAD_IMAGE_GRAYSCALE);
+    imshow("anh xam", imgGray);
+
+  /* Mat imgGray2;
+   cvtColor(img, imgGray2, CV_RGB2GRAY);
+   imshow("anh xam chuyển", imgGray2);*/
+
+    //dùng công thức chuyển
+   /* Mat dst = img.clone();
+    for (int i = 0; i < img.rows; i++)
+        for (int j = 0; j < img.cols; j++)
+        {
+            dst.at<Vec3b>(i, j)[0] = img.at<Vec3b>(i, j)[0] * 0.2 +
+                img.at<Vec3b>(i, j)[1] * 0.5 +
+                img.at<Vec3b>(i, j)[2] * 0.3;
+            dst.at<Vec3b>(i, j)[1] = dst.at<Vec3b>(i, j)[2] = dst.at<Vec3b>(i, j)[0];
+        }
+    imshow("cvtColor,dst",dst);*/
+
+   // các mô hình mau: rgB2HSV, HSV2RGB
+    /*Mat imgGray1;
+    cvtColor(img, imgGray1, CV_RGB2GRAY);
+    imshow("anh xam", imgGray1);
+
+    Mat imgHsv;
+    cvtColor(img, imgHsv, CV_RGB2HSV);
+    imshow("anh hsv", imgHsv);*/
+
+  //  tách các kênh
+ /*   Mat kenh[3];
+    split(img, kenh);
+    imshow("red", kenh[2]);
+    imshow("green", kenh[1]);
+    imshow("blue", kenh[0]);*/
+
+   //Hợp các kênh
+   // Mat imgMerge;
+   //// Mat kenh[3];
+   // kenh[0] = kenh[1] = 0;
+   // merge(kenh, 3,imgMerge);
+   // imshow("hien thi kenh RED", imgMerge);
+    
+
+    /*
+    //4.truy cập giá trị điểm ảnh
+    1.Hiển thị giá trị điểm ảnh tại tọa độ bất kỳ của ảnh 3 kênh, 1 kênh.
+    cout << "hien thi diem anh toa do I(100,100) : " << (int)img.at<Vec3b>(100, 100)[0]<<endl;
+    cout << "hien thi diem anh toa do I(100,100) : " << (int)img.at<Vec3b>(100, 100)[1]<<endl;
+    cout << "hien thi diem anh toa do I(100,100) : " << (int)img.at<Vec3b>(100, 100)[2]<<endl;
+    //1 kênh
+    cout << "hien thi diem anh toa do I(100,100) kenh red : " << (int)kenh[2].at<uchar>(100, 100) << endl;
+    
+    
+    
+    //2.Hiển thị giá trị mức xám lớn nhất, nhỏ nhất.trung bình trong ảnh.
+    double min, max;
+    minMaxLoc(imgGray1, &min, &max);
+    cout << min <<" , "<< max<<" ," << ((min + max) / 2);
+
+    //3.Hiển thị các điểm ảnh trong vùng lân cận w x w của điểm tại tọa độ bất kỳ
+    int a = 100;
+    int b = 100;
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            cout << (int)kenh[2].at<uchar>(a + i, b + j) << ",";
+        }
+        cout << endl;
+    }
+    */
+
+    /*
+    //5.Các kỹ thuật tăng cường ảnh
+    //a. Tính và vẽ histogram trên từng kênh
+    drawHistogram(img, kenh[0], "kenh blue");
+    drawHistogram(img, kenh[1], "kenh green");
+    drawHistogram(img, kenh[2], "kenh red");
+    //b.Cân băng
+    equalizeHist(kenh[0], kenh[0]);
+    imshow("can bang Hist tren kenh blue", kenh[0]);
+    equalizeHist(kenh[1], kenh[1]);
+    imshow("can bang Hist tren kenh green", kenh[1]);
+    equalizeHist(kenh[2], kenh[2]);
+    imshow("can bang Hist tren kenh red", kenh[2]);
+    
+    //c. Biến đổi ảnh âm bản của ảnh 1 kênh
+    Mat dst;
+    dst = 255 - kenh[2];
+    imshow("Am ban", dst);
+    
+    //d. Tăng độ sáng của ảnh 1 kênh, 3 kênh
+    //3kenh
+    Mat clone = img.clone();
+    int nguong = 200;
+    for (int i = 0; i < clone.rows; i++) {
+        for (int j = 0; j < clone.cols; j++) {
+            clone.at<Vec3b>(i, j)[0] = (clone.at<Vec3b>(i, j)[0] + nguong) > 255 ? 255 : (clone.at<Vec3b>(i, j)[0] + nguong);
+            clone.at<Vec3b>(i, j)[1] = (clone.at<Vec3b>(i, j)[1] + nguong) > 255 ? 255 : (clone.at<Vec3b>(i, j)[1] + nguong);
+            clone.at<Vec3b>(i, j)[2] = (clone.at<Vec3b>(i, j)[2] + nguong) > 255 ? 255 : (clone.at<Vec3b>(i, j)[2] + nguong);
+        }
+    }
+    imshow("Tang do sang", clone);
+    //1 kenh
+     //Tang do sang 1 kenh
+    
+    Mat kenh[3];
+    Mat imgClone = img.clone();
+    split(imgClone, kenh);
+    
+    imshow("Xam", kenh[0]);
+
+    int inBrightness = 150;
+    for (int i = 0; i < imgClone.rows; i++)
+    {
+        for (int j = 0; j < imgClone.cols; j++)
+        {
+            kenh[0].at<uchar>(i, j) = (kenh[0].at<uchar>(i, j) + inBrightness) > 255 ? 255 : (kenh[0].at<uchar>(i, j) + inBrightness);
+        }
+    }
+    imshow("Tang do sang tren 1 kenh", kenh[0]);
+
+    //e.Lọc ảnh: blur, MedianBlur, GaussianBlur với kích thước cửa sổ khác nhau trên ảnh 1 kenh
+    blur(img, dst, Size(3, 3));
+    imshow("blur", dst);
+
+    medianBlur(img, dst, 3);
+    imshow("Median3", dst);
+
+    GaussianBlur(img, dst, Size(3,3),0);
+    imshow("Gaussian", dst);
+
+    */
+
+
+
+   /* //6. Tìm biên trên ảnh 1 kênh
+    //a. Sobel theo hướng x, Sobel theo hướng y.
+    Mat dstx, dsty;
+    Sobel(imgGray1, dstx, CV_64F, 1, 0, 3);
+    imshow(" Sobel x", dstx);
+    Sobel(imgGray1, dsty, CV_64F, 0, 1, 3);
+    imshow(" Sobel y", dsty);
+    dst = abs(dstx) + abs(dsty);
+    imshow("sobel 2 huong", dst);
+   
+
+    //b. Canny
+    Canny(imgGray1, dst, 100, 255, 3);
+    imshow("Canny", dst);
+
+    //c.Lapplace
+    Laplacian(imgGray1, dst, CV_16S, 3,1,0,4);
+    Mat abss;
+    convertScaleAbs(dst, abss);
+    imshow("Laplacian", abss);*/
+
+
+    //Kiểm tra 1 điểm bất kỳ có phải là điểm biên hay điểm nền (255/0 ?).
+
+
+   /* //7. Phân vùng trên ảnh 1 kênh
+    //a. Phân ngưỡng ảnh 1 kênh
+    int nguong = 100;
+    for (int i = 0; i < imgClone.rows; i++)
+    {
+        for (int j = 0; j < imgClone.cols; j++)
+        {
+            kenh[2].at<uchar>(i, j) = kenh[2].at<uchar>(i, j) > nguong ? 255 : 0;
+        }
+    }
+    imshow("Phan nguong", kenh[2]);
+//hoăc
+    threshold(kenh[0], kenh[0], 100, 255, THRESH_BINARY);
+    imshow("phan nguong 1 kenh", kenh[0]);
+
+
+
+    //b. Tìm đường bao, vẽ đường bao_
+    Mat gray, out;
+    cvtColor(img, gray, CV_RGB2GRAY);
+    threshold(gray, out, 150, 255, THRESH_BINARY);
+
+    vector<vector<Point>> contours;
+    vector<Vec4i> hierarchy;
+    Mat drawing(img.rows, img.cols, CV_8UC3, Scalar(255, 255, 255));
+    findContours(out, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+
+    //c.Tính diện tích đường bao
+    double max = contourArea(contours[0],false);
+    int pos = 0;
+    for (int i = 1; i < contours.size(); i++) {
+        if (contourArea(contours[i],false) > max) {
+
+            max = contourArea(contours[i], false);
+            pos = i;
+        }
+    }
+    cout <<"dien tich duong bao: " <<max << endl;
+    drawContours(drawing, contours, pos, Scalar(0, 255, 0), 2, 8, hierarchy);
+
+    imshow("ve duong bao", drawing);
+
+    */
+
+    
+   
+
+    waitKey();
+    return 0;
+}
+
